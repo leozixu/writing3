@@ -5,8 +5,8 @@ import top.test_syntax
 import asyncio
 import os
 from pywebio import start_server
-from pywebio.output import put_text, put_markdown, put_success, put_file
-from pywebio.input import file_upload
+from pywebio.output import put_text, put_markdown, put_success, put_file,use_scope
+from pywebio.input import file_upload,input
 from function import function_leo
 import top.outline_generator
 import json
