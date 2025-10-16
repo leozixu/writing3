@@ -159,48 +159,59 @@ class tinyLLMLoop:
             #                                 请严格按照写作要点展开，写成一篇完整的学术风格中文文段，字数不少于4000字。"""}],
             #     max_tokens = 30000
             # )
+            response = await self.llm_ensemble.generate_with_context(
+                prompt_result["system"], [{"role":"user", "content":f"""{prompt_result["user"]}
 
-            response = await asyncio.gather(
-                *[
-                    self.llm_ensemble.generate_with_context(
-                        prompt_result["system"], [{"role":"user", "content":f"""{prompt_result["user"]}
                                             参考文本:{text_ref}
-                                            
+
                                             写作要点:{writing_guidance}
-                                            
+
                                             图片库:{self.images_json}
-                                            
+
                                             写作风格:{writing_style}
-                                            请严格按照写作要点展开，写成一篇完整的学术风格中文文段，字数不少于4000字。"""}]
-                       # max_tokens=16000
-                    )
-                    for _ in range(3)
-                ]
+                                            请严格按照写作要点展开，写成一篇完整的学术风格中文文段，字数不少于3000字。"""}],
             )
+            # response = await asyncio.gather(
+            #     *[
+            #         self.llm_ensemble.generate_with_context(
+            #             prompt_result["system"], [{"role":"user", "content":f"""{prompt_result["user"]}
+            #                                 参考文本:{text_ref}
+                                            
+            #                                 写作要点:{writing_guidance}
+                                            
+            #                                 图片库:{self.images_json}
+                                            
+            #                                 写作风格:{writing_style}
+            #                                 请严格按照写作要点展开，写成一篇完整的学术风格中文文段，字数不少于4000字。"""}]
+            #            # max_tokens=16000
+            #         )
+            #         for _ in range(3)
+            #     ]
+            # )
 
-            # 假设 response 是一个 List[str]，里面有 3 段文本
-            candidates_text = "\n\n".join(
-                [f"候选 {i + 1}:\n{resp}" for i, resp in enumerate(response)]
-            )
-            # 构造评审 prompt
-            evaluation_prompt = f"""
-            以下是三段候选学术文段，请你从中选出最优的一段。
-            评判标准：
-            1. 字数是否足够多
-            2. 语句是否通顺
-            3. 是否含有错别字
-            4. 不要含有太多数学公式或者数学推导
-            请你在综合考量后,输出最佳的一段全文,请只输出最佳的一段全文,不要有其他任何说明文字。
+            # # 假设 response 是一个 List[str]，里面有 3 段文本
+            # candidates_text = "\n\n".join(
+            #     [f"候选 {i + 1}:\n{resp}" for i, resp in enumerate(response)]
+            # )
+            # # 构造评审 prompt
+            # evaluation_prompt = f"""
+            # 以下是三段候选学术文段，请你从中选出最优的一段。
+            # 评判标准：
+            # 1. 字数是否足够多
+            # 2. 语句是否通顺
+            # 3. 是否含有错别字
+            # 4. 不要含有太多数学公式或者数学推导
+            # 请你在综合考量后,输出最佳的一段全文,请只输出最佳的一段全文,不要有其他任何说明文字。
 
-            {candidates_text}
-            """
-            # 调用大模型进行评审
-            best_paragraph = await self.llm_ensemble.generate_with_context(
-                "你是一个学术文本评审专家。",
-                [{"role": "user", "content": evaluation_prompt}],
-            #    max_tokens=16000,
-                temperature=0.0  # 评审任务建议低温度，保证稳定性
-            )
+            # {candidates_text}
+            # """
+            # # 调用大模型进行评审
+            # best_paragraph = await self.llm_ensemble.generate_with_context(
+            #     "你是一个学术文本评审专家。",
+            #     [{"role": "user", "content": evaluation_prompt}],
+            # #    max_tokens=16000,
+            #     temperature=0.0  # 评审任务建议低温度，保证稳定性
+            # )
 
             # evaluate_result["cur_kernel"] = response
             # response = await self.llm_ensemble.generate_with_context(
@@ -217,7 +228,7 @@ class tinyLLMLoop:
             ## update object_dict_, evaluate or prompt may change it through fileio
             with open(loop_begin_dict, "r",encoding="utf-8") as f:
                 object_dict_ = json.load(f)
-            object_dict_["response"] = best_paragraph
+            object_dict_["response"] = response
 
             
             cur_loop += 1
