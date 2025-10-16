@@ -78,38 +78,41 @@ class MdGenerator:
 
         system_message = f""" "role": "system", "content": "你是一个专业的论文写作助理。" """
 
-        response = await asyncio.gather(
-            *[
-                self.llm_ensemble.generate_with_context(
+        response = await self.llm_ensemble.generate_with_context(
                     system_message, [{"role": "user", "content": prompt}],
                 )
-                for _ in range(3)
-            ]
-        )
-        candidates_text = "\n\n".join(
-            [f"候选 {i + 1}:\n{resp}" for i, resp in enumerate(response)]
-        )
-        # 构造评审 prompt
-        evaluation_prompt = f"""
-        以下是三段候选论文提纲，请你从中选出最优的一个。
-        评判标准：
-        1. 字数是否足够多
-        2. 语句是否通顺
-        3. 图片与文章的贴合度是否足够高
-        4. 提纲是否详尽
-        请你在综合考量后,输出最佳的一段全文,请只输出最佳的一段全文,不要有其他任何说明文字。
+        # response = await asyncio.gather(
+        #     *[
+        #         self.llm_ensemble.generate_with_context(
+        #             system_message, [{"role": "user", "content": prompt}],
+        #         )
+        #         for _ in range(3)
+        #     ]
+        # )
+        # candidates_text = "\n\n".join(
+        #     [f"候选 {i + 1}:\n{resp}" for i, resp in enumerate(response)]
+        # )
+        # # 构造评审 prompt
+        # evaluation_prompt = f"""
+        # 以下是三段候选论文提纲，请你从中选出最优的一个。
+        # 评判标准：
+        # 1. 字数是否足够多
+        # 2. 语句是否通顺
+        # 3. 图片与文章的贴合度是否足够高
+        # 4. 提纲是否详尽
+        # 请你在综合考量后,输出最佳的一段全文,请只输出最佳的一段全文,不要有其他任何说明文字。
 
-        {candidates_text}
-        """
-        # 调用大模型进行评审
-        best_paragraph = await self.llm_ensemble.generate_with_context(
-            "你是一个学术文本评审专家。",
-            [{"role": "user", "content": evaluation_prompt}],
-            temperature=0.0  # 评审任务建议低温度，保证稳定性
-        )
+        # {candidates_text}
+        # """
+        # # 调用大模型进行评审
+        # best_paragraph = await self.llm_ensemble.generate_with_context(
+        #     "你是一个学术文本评审专家。",
+        #     [{"role": "user", "content": evaluation_prompt}],
+        #     temperature=0.0  # 评审任务建议低温度，保证稳定性
+        # )
 
         with open(full_path, "w", encoding="utf-8") as f:
-            f.write(best_paragraph)
+            f.write(response)
 
 
 # === 外部调用入口 ===
@@ -244,4 +247,5 @@ if __name__ == "__main__":
 # if __name__ == "__main__":
 #     # res = asyncio.run(single_test())
 #     res = asyncio.run(concurrent_test())
+
 #     print(res)
