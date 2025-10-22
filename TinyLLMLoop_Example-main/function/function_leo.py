@@ -43,107 +43,6 @@ def chinese_char_ratio(text):
     chinese = len(re.findall(r'[\u4e00-\u9fff]', text))
     return chinese / total if total > 0 else 0.0
 
-# def extract_pdf_info(pdf_path):
-#     doc = fitz.open(pdf_path)
-#     page_texts = [doc[p].get_text("text") or "" for p in range(doc.page_count)]
-#     total_pages = doc.page_count
-#
-#     # 提取 PDF 内置 TOC
-#     toc = doc.get_toc()
-#     level1 = [(title.strip(), int(page)) for lv, title, page in toc if lv == 1]
-#     level1.sort(key=lambda x: x[1])
-#
-#     # 检测摘要页
-#     abstract_re = re.compile(r'\babstract\b', re.I)
-#     keywords_re = re.compile(r'\bKeywords\b|\b关键词\b', re.I)
-#     ch_pages, en_pages = [], []
-#     for i, txt in enumerate(page_texts, start=1):
-#         if "摘要" in txt and not is_toc_like(txt) and chinese_char_ratio(txt) > 0.02:
-#             ch_pages.append(i)
-#         if abstract_re.search(txt) and not is_toc_like(txt):
-#             en_pages.append(i)
-#     ch_ranges = page_ranges_from_list(ch_pages)
-#
-#     # 英文摘要范围
-#     en_range = None
-#     if en_pages:
-#         start = min(en_pages)
-#         end = start
-#         for p in range(start, total_pages + 1):
-#             txt = page_texts[p - 1]
-#             if p != start and (is_toc_like(txt) or keywords_re.search(txt) or re.search(r'第[一二三四五六七八九十0-9]+章', txt)):
-#                 end = p - 1
-#                 break
-#             end = p
-#         en_range = (start, end)
-#
-#     # 找到第一个正式章节起始页
-#     main_level1 = [(t, p) for (t, p) in level1 if not re.fullmatch(r'(?i)abstract', t) and '摘要' not in t]
-#     first_main_chapter_start = main_level1[0][1] if main_level1 else None
-#
-#     # 目录页范围 = 摘要结束到第一章之前
-#     last_abs_page = 0
-#     if ch_ranges:
-#         last_abs_page = max(e for (_, e) in ch_ranges)
-#     if en_range:
-#         last_abs_page = max(last_abs_page, en_range[1])
-#     directory = None
-#     if last_abs_page and first_main_chapter_start and first_main_chapter_start > last_abs_page + 1:
-#         directory = (last_abs_page + 1, first_main_chapter_start - 1)
-#
-#     # 汇总结果
-#     sections = []
-#     for s, e in ch_ranges:
-#         sections.append({"title": "摘要", "start_page": s, "end_page": e})
-#     if en_range:
-#         sections.append({"title": "Abstract", "start_page": en_range[0], "end_page": en_range[1]})
-#     if directory:
-#         sections.append({"title": "目录", "start_page": directory[0], "end_page": directory[1]})
-#     for title, page in main_level1:
-#         sections.append({"title": title, "start_page": page})
-#
-#     # 按页码排序
-#     sections.sort(key=lambda x: x["start_page"])
-#
-#     # 填充 end_page
-#     for i, sec in enumerate(sections):
-#         if "end_page" in sec:
-#             continue
-#         if i + 1 < len(sections):
-#             sec["end_page"] = sections[i + 1]["start_page"] - 1
-#         else:
-#             sec["end_page"] = total_pages
-#         if sec["end_page"] < sec["start_page"]:
-#             sec["end_page"] = sec["start_page"]
-#
-#     # 合并同名条目，修复区间
-#     def merge_sections(secs, total):
-#         by_title = {}
-#         for s in secs:
-#             t = s["title"]
-#             a, b = int(s["start_page"]), int(s["end_page"])
-#             if b < a:
-#                 b = a
-#             if t in by_title:
-#                 by_title[t]["start_page"] = min(by_title[t]["start_page"], a)
-#                 by_title[t]["end_page"] = max(by_title[t]["end_page"], b)
-#             else:
-#                 by_title[t] = {"title": t, "start_page": a, "end_page": b}
-#         merged = list(by_title.values())
-#         merged.sort(key=lambda x: x["start_page"])
-#         skip = {"摘要", "Abstract", "目录"}
-#         for i in range(len(merged) - 1):
-#             if merged[i]["title"] in skip:
-#                 continue
-#             if merged[i]["end_page"] >= merged[i + 1]["start_page"]:
-#                 merged[i]["end_page"] = merged[i + 1]["start_page"] - 1
-#                 if merged[i]["end_page"] < merged[i]["start_page"]:
-#                     merged[i]["end_page"] = merged[i]["start_page"]
-#         if merged:
-#             merged[-1]["end_page"] = min(merged[-1]["end_page"], total)
-#         return merged
-#
-#     return {"chapters": merge_sections(sections, total_pages)}
 def extract_pdf_info(pdf_path):
     doc = fitz.open(pdf_path)
     page_texts = [doc[p].get_text("text") or "" for p in range(doc.page_count)]
@@ -247,6 +146,109 @@ def extract_pdf_info(pdf_path):
         return merged
 
     return {"chapters": merge_sections(sections, total_pages)}
+# def extract_pdf_info(pdf_path):
+#     doc = fitz.open(pdf_path)
+#     page_texts = [doc[p].get_text("text") or "" for p in range(doc.page_count)]
+#     total_pages = doc.page_count
+
+#     # 提取 PDF 内置 TOC
+#     toc = doc.get_toc()
+#     level1 = [(title.strip(), int(page)) for lv, title, page in toc if lv == 1]
+#     level1.sort(key=lambda x: x[1])
+
+#     # 检测摘要页
+#     abstract_re = re.compile(r'\babstract\b', re.I)
+#     keywords_re = re.compile(r'\bKeywords\b|\b关键词\b', re.I)
+#     ch_pages, en_pages = [], []
+#     for i, txt in enumerate(page_texts, start=1):
+#         if "摘要" in txt and not is_toc_like(txt) and chinese_char_ratio(txt) > 0.02:
+#             ch_pages.append(i)
+#         if abstract_re.search(txt) and not is_toc_like(txt):
+#             en_pages.append(i)
+#     ch_ranges = page_ranges_from_list(ch_pages)
+
+#     # 英文摘要范围
+#     en_range = None
+#     if en_pages:
+#         start = min(en_pages)
+#         end = start
+#         for p in range(start, total_pages + 1):
+#             txt = page_texts[p - 1]
+#             if p != start and (is_toc_like(txt) or keywords_re.search(txt) or re.search(r'第[一二三四五六七八九十0-9]+章', txt)):
+#                 end = p - 1
+#                 break
+#             end = p
+#         en_range = (start, end)
+
+#     # 找到第一个正式章节起始页
+#     main_level1 = [(t, p) for (t, p) in level1 if not re.fullmatch(r'(?i)abstract', t) and '摘要' not in t]
+#     first_main_chapter_start = main_level1[0][1] if main_level1 else None
+
+#     # 目录页范围 = 摘要结束到第一章之前
+#     last_abs_page = 0
+#     if ch_ranges:
+#         last_abs_page = max(e for (_, e) in ch_ranges)
+#     if en_range:
+#         last_abs_page = max(last_abs_page, en_range[1])
+#     directory = None
+#     if last_abs_page and first_main_chapter_start and first_main_chapter_start > last_abs_page + 1:
+#         directory = (last_abs_page + 1, first_main_chapter_start - 1)
+
+#     # 汇总结果
+#     sections = []
+#     # 👉 整合中英文摘要
+#     if ch_ranges or en_range:
+#         s = min([r[0] for r in ch_ranges] + ([en_range[0]] if en_range else []))
+#         e = max([r[1] for r in ch_ranges] + ([en_range[1]] if en_range else []))
+#         sections.append({"title": "摘要", "start_page": s, "end_page": e})
+
+#     if directory:
+#         sections.append({"title": "目录", "start_page": directory[0], "end_page": directory[1]})
+#     for title, page in main_level1:
+#         sections.append({"title": title, "start_page": page})
+
+#     # 按页码排序
+#     sections.sort(key=lambda x: x["start_page"])
+
+#     # 填充 end_page
+#     for i, sec in enumerate(sections):
+#         if "end_page" in sec:
+#             continue
+#         if i + 1 < len(sections):
+#             sec["end_page"] = sections[i + 1]["start_page"] - 1
+#         else:
+#             sec["end_page"] = total_pages
+#         if sec["end_page"] < sec["start_page"]:
+#             sec["end_page"] = sec["start_page"]
+
+#     # 合并同名条目，修复区间
+#     def merge_sections(secs, total):
+#         by_title = {}
+#         for s in secs:
+#             t = s["title"]
+#             a, b = int(s["start_page"]), int(s["end_page"])
+#             if b < a:
+#                 b = a
+#             if t in by_title:
+#                 by_title[t]["start_page"] = min(by_title[t]["start_page"], a)
+#                 by_title[t]["end_page"] = max(by_title[t]["end_page"], b)
+#             else:
+#                 by_title[t] = {"title": t, "start_page": a, "end_page": b}
+#         merged = list(by_title.values())
+#         merged.sort(key=lambda x: x["start_page"])
+#         skip = {"摘要", "目录"}
+#         for i in range(len(merged) - 1):
+#             if merged[i]["title"] in skip:
+#                 continue
+#             if merged[i]["end_page"] >= merged[i + 1]["start_page"]:
+#                 merged[i]["end_page"] = merged[i + 1]["start_page"] - 1
+#                 if merged[i]["end_page"] < merged[i]["start_page"]:
+#                     merged[i]["end_page"] = merged[i]["start_page"]
+#         if merged:
+#             merged[-1]["end_page"] = min(merged[-1]["end_page"], total)
+#         return merged
+
+#     return {"chapters": merge_sections(sections, total_pages)}
 
 
 
@@ -786,3 +788,4 @@ def merge_md_files(files, output_file="merged.md"):
         merged += Path(f).read_text(encoding="utf-8").strip() + "\n\n"
     Path(output_file).write_text(merged.strip(), encoding="utf-8")
     print(f"已合并 {len(files)} 个文件 -> {output_file}")
+
