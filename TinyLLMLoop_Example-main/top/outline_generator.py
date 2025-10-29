@@ -44,7 +44,6 @@ class MdGenerator:
 
         with open("./top/Outline_ref.md", "r", encoding="utf-8") as f:
             outline_ref = f.read()
-        print(f"test text_ref_abstract: {text_ref_abstract}")
         prompt = f"""
                 你是一个论文写作助理。
 
@@ -247,6 +246,7 @@ if __name__ == "__main__":
 #     res = asyncio.run(concurrent_test())
 
 #     print(res)
+
 
 
 
