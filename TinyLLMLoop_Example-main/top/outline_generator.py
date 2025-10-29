@@ -11,13 +11,13 @@ pdf_info_path = "top/pdf_info.json"
 with open(pdf_info_path, "r", encoding="utf-8") as f:
     pdf_info_json = json.load(f)
 
-abstract_page_start = pdf_info_json["chapters"][0]["start_page"]
-abstract_page_end = pdf_info_json["chapters"][0]["end_page"]
-contents_page_start = pdf_info_json["chapters"][1]["start_page"]
-contents_page_end = pdf_info_json["chapters"][1]["end_page"]
+# abstract_page_start = pdf_info_json["chapters"][0]["start_page"]
+# abstract_page_end = pdf_info_json["chapters"][0]["end_page"]
+# contents_page_start = pdf_info_json["chapters"][1]["start_page"]
+# contents_page_end = pdf_info_json["chapters"][1]["end_page"]
 
-text_ref_abstract = function_leo.extract_text_from_pdf(pdf_path, pages=(abstract_page_start - 1, abstract_page_end))  # 摘要
-text_ref_contents = function_leo.extract_text_from_pdf(pdf_path, pages=(contents_page_start - 1, contents_page_end))  # 目录
+# text_ref_abstract = function_leo.extract_text_from_pdf(pdf_path, pages=(abstract_page_start - 1, abstract_page_end))  # 摘要
+text_ref_contents = function_leo.extract_text_from_pdf(pdf_path, pages=(0, 50))  # 目录
 text_ref_judgement = function_leo.extract_text_from_pdf(pdf_path, pages=(11, 40))  # 部分内容
 name_tag0 = "TAG_cuda_syntax"
 
@@ -48,7 +48,7 @@ class MdGenerator:
         prompt = f"""
                 你是一个论文写作助理。
 
-                任务：根据参考论文概要和章节目录，以及提供的图片库(JSON格式)，生成完整的论文提纲（Markdown 格式），该提纲要足够详细,用于指导另一个大模型完成论文写作。
+                任务：根据 参考论文概要/目录，以及提供的图片库(JSON格式)，生成完整的论文提纲（Markdown 格式），该提纲要足够详细,用于指导另一个大模型完成论文写作。
 
                 要求：
                 1. 输出内容为markdown格式。
@@ -65,9 +65,7 @@ class MdGenerator:
                 11. 输出的纲要内容要完整,最后不能遗漏总结与展望
                 12. 输出的提纲格式参考下方我给出的"参考提纲"(保留参考提纲内的"- 写作要点"格式)
 
-                参考论文概要:
-                {text_ref_abstract}
-                参考论文目录:
+                参考论文概要/目录:
                 {text_ref_contents}
                 参考提纲:
                 {outline_ref}
@@ -249,5 +247,6 @@ if __name__ == "__main__":
 #     res = asyncio.run(concurrent_test())
 
 #     print(res)
+
 
 
