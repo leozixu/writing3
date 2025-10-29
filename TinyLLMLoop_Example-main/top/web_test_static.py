@@ -104,37 +104,37 @@ async def main():
 
 
     #0.3 从PDF内提取章节页码信息
-    pdfinfo1 = function_leo.extract_pdf_info("top/paper_test.pdf")
-    if not pdfinfo1:
-        pdfinfo1 = {"info": "未提取到内容"}
-    with open("top/pdf_info.json", "w", encoding="utf-8") as f:
-        json.dump(pdfinfo1, f, ensure_ascii=False, indent=4)
-    with open("top/pdf_info.json", "r", encoding="utf-8") as f:
-        pdfinfo_text = f.read()
+    # pdfinfo1 = function_leo.extract_pdf_info("top/paper_test.pdf")
+    # if not pdfinfo1:
+    #     pdfinfo1 = {"info": "未提取到内容"}
+    # with open("top/pdf_info.json", "w", encoding="utf-8") as f:
+    #     json.dump(pdfinfo1, f, ensure_ascii=False, indent=4)
+    # with open("top/pdf_info.json", "r", encoding="utf-8") as f:
+    #     pdfinfo_text = f.read()
 
 
     # 显示可编辑 JSON
-    put_markdown("### 📄 自动提取的 PDF 信息 (在下面编辑并点击提交以确认)")
-    new_text = await textarea(
-        "pdf_info_editor",
-        value=json.dumps(pdfinfo1, ensure_ascii=False, indent=4),
-        rows=20,
-        placeholder="请在此编辑 JSON，然后点击提交"
-    )
-    # 尝试解析 JSON
-    try:
-        parsed = json.loads(new_text)
-    except Exception as e:
-        put_text(f"⚠️ JSON 解析失败（将保存为原始文本）：{e}")
-        parsed = None
+    # put_markdown("### 📄 自动提取的 PDF 信息 (在下面编辑并点击提交以确认)")
+    # new_text = await textarea(
+    #     "pdf_info_editor",
+    #     value=json.dumps(pdfinfo1, ensure_ascii=False, indent=4),
+    #     rows=20,
+    #     placeholder="请在此编辑 JSON，然后点击提交"
+    # )
+    # # 尝试解析 JSON
+    # try:
+    #     parsed = json.loads(new_text)
+    # except Exception as e:
+    #     put_text(f"⚠️ JSON 解析失败（将保存为原始文本）：{e}")
+    #     parsed = None
 
-    out_path = os.path.join(save_dir, "pdf_info.json")
-    if isinstance(parsed, (dict, list)):
-        with open(out_path, "w", encoding="utf-8") as f:
-            json.dump(parsed, f, ensure_ascii=False, indent=4)
-    else:
-        with open(out_path, "w", encoding="utf-8") as f:
-            f.write(new_text)
+    # out_path = os.path.join(save_dir, "pdf_info.json")
+    # if isinstance(parsed, (dict, list)):
+    #     with open(out_path, "w", encoding="utf-8") as f:
+    #         json.dump(parsed, f, ensure_ascii=False, indent=4)
+    # else:
+    #     with open(out_path, "w", encoding="utf-8") as f:
+    #         f.write(new_text)
     put_text("✅ PDF 信息已保存，开始生成提纲...")
 
 
